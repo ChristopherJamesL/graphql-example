@@ -4,32 +4,13 @@ const { createYoga } = require('graphql-yoga');
 const { loadFilesSync } = require('@graphql-tools/load-files');
 const { makeExecutableSchema } = require('@graphql-tools/schema');
 
-const typesArray = loadFilesSync( './**/*.graphql', { extensions: ['graphql'], });
-
-const products = require('./products/products.model');
-const orders = require('./orders/orders.model');
-
-const resolvers = {
-    Query: {
-        products: async () => {
-            console.log('Getting products...');
-            const product = await Promise.resolve(products);
-            return product;
-        },
-        orders: () => {
-            console.log('Getting orders...');
-            return orders;
-        },
-    },
-};
+const typesArray = loadFilesSync( './**/*', { extensions: ['graphql'] });
+const resolversArray = loadFilesSync('./**/*', { extensions: ['resolvers.js'] });
 
 const schema = makeExecutableSchema({
     typeDefs: typesArray,
-    resolvers,
+    resolvers: resolversArray,
 });
-
-
-
 
 const app = express();
 
