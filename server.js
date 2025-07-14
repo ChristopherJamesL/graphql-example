@@ -1,6 +1,9 @@
 const path = require('path');
+const cors = require('cors');
 const express = require('express');
 const { ApolloServer } = require('@apollo/server');
+const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloServerPluginLandingPageLocalDefault } = require('@apollo/server/plugin/landingPage/default');
 const { loadFilesSync } = require('@graphql-tools/load-files');
 const { makeExecutableSchema } = require('@graphql-tools/schema');
 
@@ -14,13 +17,24 @@ async function startApolloServer() {
         typeDefs: typesArray,
         resolvers: resolversArray,
     });
+    
+    const server = new ApolloServer({
+        schema,
+        plugins: [ApolloServerPluginLandingPageLocalDefault({ footer: false }),]
+    });
+    
+    await server.start();
+    
+    app.use(cors());
+    app.use(express.json());
+    app.use('/graphql', expressMiddleware(server, {
+        context: async ({ req }) => ({}),
+    }));
 
-    const server = new ApolloServer({})
+    app.listen(3000, () => {
+        console.log(`listening on port 3000`);
+        console.log(`Running GraphgQL server...`);
+    });
 }
 
-app.use('/graphql', () => {});
-
-app.listen(3000, () => {
-    console.log(`listening on port 3000`);
-    console.log(`Running GraphgQL server...`);
-});
+startApolloServer();
